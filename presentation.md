@@ -362,11 +362,10 @@ python-Levenshtein | regex |
 
 ---
 
-# Speeds and Feeds
+# Closing thoughts
 
 - Workload and Phases are important
-
-- 4x improvement
+- 14x improvement
 - 0.73x improvement
 
 ---
