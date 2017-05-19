@@ -147,7 +147,51 @@ Credit: Anonymous
 ---
 # Project Structure
 
+```[.highlight: 1-3]
+├── functions
+│   └── listener
+│       └── main.py
+├── infrastructure
+│   ├── dev
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── prod
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+├── project.json
+└── project.prod.json
 ```
+
+^ This is what a typically layout of an Apex project looks like. I have a collection of functions in a directory with a directory per function and it's associated code. Then I have infrastructure configuration for each environment in nested format, and finally the project configurations for each environment that direct apex on what to do.
+
+---
+# Project Structure
+
+```[.highlight: 4-12]
+├── functions
+│   └── listener
+│       └── main.py
+├── infrastructure
+│   ├── dev
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── prod
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+├── project.json
+└── project.prod.json
+```
+
+^ This is what a typically layout of an Apex project looks like. I have a collection of functions in a directory with a directory per function and it's associated code. Then I have infrastructure configuration for each environment in nested format, and finally the project configurations for each environment that direct apex on what to do.
+
+---
+# Project Structure
+
+```[.highlight: 13-14]
 ├── functions
 │   └── listener
 │       └── main.py
@@ -185,7 +229,6 @@ Credit: Anonymous
 ^ Here is an example a project configuration. It sets the details about the project, function configuration options, and environment details.
 
 ---
-
 # S3 Event Handler
 
 ```
@@ -210,6 +253,52 @@ def handle(event, context):
 
 ---
 
+# S3 Event Handler
+
+```[.highlight: 13-15]
+import logging
+
+import boto3
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
+def get_bucket_key(event);
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = event['Records'][0]['s3']['object']['key']
+    return bucket, key
+
+def handle(event, context):
+    log.info('{}-{}'.format(event, context))
+    bucket_name, key_name = get_bucket_key(event)
+```
+
+^ Here is the first part of an example S3 function handler. The critical part is this handle method. This is the code that will get run when the lambda function is invoked. Every lambda function needs to accept an event and a context. The event contains the data of the event that triggered it, and the context contains any additional information supplied that might relate to the handling of the lambda function. In practice through, we're focused on what we are getting in the event. Here you can see we parse the event records list and grab the details of the file upload that triggered the event in our get_bucket_key function.
+
+---
+# S3 Event Handler
+
+```[.highlight: 8-12]
+import logging
+
+import boto3
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
+def get_bucket_key(event);
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = event['Records'][0]['s3']['object']['key']
+    return bucket, key
+
+def handle(event, context):
+    log.info('{}-{}'.format(event, context))
+    bucket_name, key_name = get_bucket_key(event)
+```
+
+^ Here is the first part of an example S3 function handler. The critical part is this handle method. This is the code that will get run when the lambda function is invoked. Every lambda function needs to accept an event and a context. The event contains the data of the event that triggered it, and the context contains any additional information supplied that might relate to the handling of the lambda function. In practice through, we're focused on what we are getting in the event. Here you can see we parse the event records list and grab the details of the file upload that triggered the event in our get_bucket_key function.
+
+---
 # S3 Event Handler (cont.)
 
 ```
@@ -248,7 +337,7 @@ resource "aws_iam_policy" "listener_logs" {
   policy      = "${data.aws_iam_policy_document.listener_logging.json}"
 }
 ```
-^ We begin by build a policy document and creating a policy from it.
+^ We begin by build a policy document and create a policy from it.
 
 ---
 
