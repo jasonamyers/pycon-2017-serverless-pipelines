@@ -26,7 +26,7 @@ Credit: Horst Felske and Fritz Schiemann
 - Scaling
 - Recovery
 
-^ Traditional pipelines are often kicked off at a scheduled time and depending on resources we may need to be careful about overlap. Pipelines with multiple phases and interdependencies quickly become too complex to reason about sanely. I know I've certainly loaded absolute trash data via ETL all because of not understanding some part of a pipeline. This complexity makes it difficult to scale pipelines as our data sets rapidly expand or evolve. And what happens when stuff goes south: retry, replay or Knuth forbid syncing ever need to be done.
+^ Traditional pipelines are often kicked off at a scheduled time and depending on resources we may need to be careful about overlap. Pipelines with multiple phases and interdependencies quickly become too complex to reason about sanely. I know I've certainly loaded absolute trash data via ETL all because of not understanding some part of a pipeline. This complexity makes it difficult to scale pipelines as our data sets rapidly expand or evolve. And what happens when stuff goes south: retry, replay or Radia Perlman forbid syncing ever need to be done.
 
 ---
 
@@ -48,16 +48,17 @@ Credit: Anonymous
 
 # [fit] SERVERLESS
 
-^ SERVERLESS! That's right go ahead and fill in that square on your unicorn buzzword bingo card. There is so much hype around serverless that it can feel a bit too good to be true. I wanna set all that hype aside and focus on just one of the parts of a serverless architecture...
+^ SERVERLESS! That's right go ahead and fill in that square on your unicorn buzzword bingo card.
 
 ---
 
 ![fit](so-doge-much-hype-very-excite.jpg)
 
+^ There is so much hype around serverless that it can feel a bit too good to be true. I wanna set all that hype aside and focus on just one of the parts of a serverless architecture...
 
 ---
 
-# Cloud Functions
+# [fit] Cloud Functions
 
 ^ Cloud Functions are wonderful little Event Driven functions that we can upload as just the function and it's associated requirements, without concern for what will execute it. I called them wonderful because you can truly not worry about how they are run until you have to... They feature Automatic STDOUT logging and Permission Based Execution makes working with them in a auditable and "prescribed" manner possible. And for the next wonderful part...
 
@@ -66,62 +67,62 @@ Credit: Anonymous
 ![fit](gcf-logo.png)
 ![fit](azurefunctions.png)
 
-^ Many cloud providers offer them...  You can couple then with Google's wonderful Container services, Azure's beautiful ML APIs, and of course Amazon's wide array of data analysis tools. All three of them work quite well and have a slightly varying feature set but the overall concepts apply.
+^ Many cloud providers offer them...  You can couple then with Google's wonderful ML and Container services, Azure's beautiful ML APIs, and of course Amazon's wide array of data analysis tools. All three of them work quite well and have a slightly varying feature set but the overall concepts apply.
 
 ---
 
 ![fit](lambda-logo.png)
 
-^ For this talk, We're going to focus on AWS Lambda since it's been around the longest. It supports both python and legacy python, node, .net and more
+^ For this talk, We're going to focus on AWS Lambda since it's been around the longest. It supports both python and legacy python, node, C# and Java. And I've seen shims to make golang and many other languages run on it.  
 
 ---
 
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-1.png)
 
-^ Let's take a look at a simple pipeline. For me a lot of my data pipelines start with a file upload or a scheduled event. For this simpler overview, let's start with a file upload. A file is uploaded to an S3 bucket, which fires an AWS event that can have an array of targets...
+^ Let's take a look at a Intro pipeline. For me a lot of my data pipelines start with a file upload or a scheduled event. For this overview, let's start with a file upload. A file is uploaded to an S3 bucket, which fires an AWS event that can have an array of targets...
 
 ---
 
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-2.png)
 
 ^ but let's send ours to one of those spiffy lambda cloud functions. SERVERLESS! When this function gets an event, it can decide which pipeline this file belongs to send it to that pipeline. Now it's possible to directly invoke the pipeline, but I like to use a queue or an event stream (more on this later) and let an event listen to that. It removes the direct coupling that might get in our way latter.
 
 ---
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-3.png)
 
-^ For this example, we're going to use a simple SQS queue to hold each pipeline runs that need to occur.
+^ For this example, we're going to use an SQS queue to hold each pipeline runs that need to occur.
 
 ---
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-4.png)
 
 ^ We'll have the SQS queue trigger another function when an item is is added into the queue. This function will grab the file from S3 and break it up into records to be written to our database.
 ---
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-5.png)
 
 ^ Each one of these records will be used to invoke yet another function that writes the data into a datastore of some sort. In our case, I'm using amazon redshift here.  If we needed to do additional processing on our data, or even just some part of the records
 ---
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-6.png)
 
 ^ We can add another function to perform that transformation and invoke it for each record we need to transform. Then the transform function can send it to the writer for safekeeping.
 
 ---
-# Simple Pipeline overview
+# Intro Pipeline overview
 
 ![fit, inline](simple-lambda-scaling.png)
 
-^ The wonderful part of this setup is that it scales exceptionally well. Each S3 event creates an invocation of our s3 handler function, same for our queue, and same for our reader and transformer!  This is a simple example, and we're going to show a deeper example, but let's talk about these functions for a section. We're gonna start by talking about the tools available to us to create them
+^ The wonderful part of this setup is that it scales exceptionally well. Each S3 event creates an invocation of our s3 handler function, same for our queue, and same for our reader and transformer!  This is a basic example, and we're going to show a deeper example in a moment, but let's talk about these functions for a second. We're gonna start by talking about the tools available to us to create them
 
 ---
 
@@ -142,7 +143,7 @@ Credit: Anonymous
 - Function Deployment
 - Infrastructure as code via Terraform
 
-^ Apex. This isn't a slam to the other tools it's just a personal preference. I like the way Apex handle multiple environments by separating the configuration and infrastructure from the code. I like the way it performs the function deployment with simple commands that take environments as arguments, and finally i like that I can use terraform to build the infrastructure components I need to support my lambda functions all in one tool.
+^ Apex. This isn't a slam to the other tools it's just a personal preference. I like the way Apex handle multiple environments by separating the configuration and infrastructure from the code. I like the way it performs the function deployment with memorable  commands that take environments as arguments, and finally i like that I can use terraform to build the infrastructure components I need to support my lambda functions all in one tool.
 
 ---
 # Project Structure
@@ -485,7 +486,7 @@ python-Levenshtein | regex |
 
 ![fit, inline](lambda-docker-5.png)
 
-^ Also Perlman forbid it doesn't send slack or pagerduty notifications. I normally farm that work out to a function as well. Especially for those things where my pipeline crashes in a way that I only get the ECS container stop event and not an error or event from my code running in the container.
+^ Also Knuth forbid it doesn't send slack or pagerduty notifications. I normally farm that work out to a function as well. Especially for those things where my pipeline crashes in a way that I only get the ECS container stop event and not an error or event from my code running in the container.
 
 ---
 
